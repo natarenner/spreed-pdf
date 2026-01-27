@@ -1,0 +1,105 @@
+version: '3.8'
+
+services:
+  db:
+    image: ankane/pgvector:latest
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-pdf_api}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d pdf_api"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    restart: always
+    command: >
+      sh -c "uv run alembic upgrade head && 
+             uv run fastapi run api/main.py"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-pdf_api}
+      - DRAMATIQ_BROKER_URL=redis://redis:6379/1
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build: .
+    restart: always
+    command: uv run dramatiq workers.tasks
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-pdf_api}
+      - DRAMATIQ_BROKER_URL=redis://redis:6379/1
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  formbricks:
+    image: formbricks/formbricks:latest
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      # --- URLs ---
+      WEBAPP_URL: ${FORMBRICKS_WEBAPP_URL}
+      NEXTAUTH_URL: ${FORMBRICKS_NEXTAUTH_URL}
+
+      # --- Database ---
+      DATABASE_URL: ${FORMBRICKS_DATABASE_URL}
+
+      # --- Redis ---
+      REDIS_URL: redis://redis:6379
+
+      # --- Segurança ---
+      NEXTAUTH_SECRET: ${FORMBRICKS_NEXTAUTH_SECRET}
+      ENCRYPTION_KEY: ${FORMBRICKS_ENCRYPTION_KEY}
+      WEBHOOK_SECRET: ${FORMBRICKS_WEBHOOK_SECRET}
+      CRON_SECRET: ${FORMBRICKS_CRON_SECRET}
+
+      # --- Configurações Extras ---
+      EMAIL_VERIFICATION_DISABLED: "1"
+      PASSWORD_RESET_DISABLED: "1"
+      NEXT_PUBLIC_FORMBRICKS_API_HOST: ${FORMBRICKS_WEBAPP_URL}
+      NEXT_PUBLIC_FORMBRICKS_DASHBOARD_URL: ${FORMBRICKS_WEBAPP_URL}
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Checkout PIX • Auditoria Estratégica</title>
+
+  <link rel="stylesheet" href="./styles.css" />
+
+  <!-- Intl Tel Input (bandeira + DDI + validação) -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/intl-tel-input@19.5.7/build/css/intlTelInput.css"
+  />
+</head>
+
+<body>
+  <main class="page">
+    <section class="shell">
+      <header class="top">
+        <div class="brand">
+          <div class="logo">S</div>
+          <div class="brand-text">
+            <div class="brand-name">Spreed</div>
+            <div class="brand-sub">Checkout seguro</div>
+          </div>
+        </div>
+
+        <div class="trust">
+          <span class="pill"><span class="dot"></span> PIX</span>
+          <span class="pill subtle">Pagamento instantâneo via PIX</span>
+        </div>
+      </header>
+
+      <section class="card">
+        <div class="summary">
+          <div class="product">
+            <h1>Auditoria Estratégica</h1>
+            <p>Análise objetiva + recomendações práticas.</p>
+          </div>
+
+          <div class="pricebox">
+            <div class="price">R$ 100,00</div>
+            <div class="hint">Pagamento via PIX</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <form id="checkoutForm" novalidate>
+          <div class="grid">
+            <div class="field">
+              <label for="name">Nome</label>
+              <input id="name" name="name" autocomplete="name" placeholder="Seu nome completo" />
+              <small class="error" id="err-name"></small>
+            </div>
+
+            <div class="field">
+              <label for="email">Email</label>
+              <input id="email" name="email" type="email" autocomplete="email" placeholder="nome@email.com" />
+              <small class="error" id="err-email"></small>
+            </div>
+
+            <div class="field">
+              <label for="whatsapp">WhatsApp</label>
+              <input id="whatsapp" name="whatsapp" type="tel" autocomplete="tel" />
+              <small class="error" id="err-whatsapp"></small>
+            </div>
+
+            <div class="field">
+              <label for="cpf">CPF</label>
+              <input id="cpf" name="cpf" inputmode="numeric" placeholder="000.000.000-00" />
+              <small class="error" id="err-cpf"></small>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button id="nextBtn" type="submit">Próximo</button>
+            <div class="status" id="status" aria-live="polite"></div>
+          </div>
+        </form>
+
+        <section class="qr" id="qrArea">
+          <div class="divider"></div>
+
+          <div class="qr-head">
+            <div>
+              <h2>Pague com PIX</h2>
+              <p>Escaneie o QR Code ou copie o código abaixo.</p>
+            </div>
+            <span class="pill"><span class="dot"></span> Aguardando pagamento</span>
+          </div>
+
+          <div class="qr-body">
+            <div class="qr-code">
+              <div id="qrcode"></div>
+            </div>
+
+            <div class="qr-copy">
+              <label for="pixText">PIX Copia e Cola</label>
+              <textarea id="pixText" readonly></textarea>
+
+              <div class="btnrow">
+                <button id="copyBtn" type="button" class="btn-secondary">Copiar</button>
+                <button id="newBtn" type="button" class="btn-ghost">Gerar novo</button>
+              </div>
+
+              <div class="expires" id="expires"></div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <footer class="footer">
+        SPREED SOFTWARE E PRODUCOES LTDA • CNPJ: 52.783.893/0001-92
+      </footer>
+    </section>
+  </main>
+
+  <!-- QR generator -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+  <!-- Intl Tel Input -->
+  <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@19.5.7/build/js/intlTelInput.min.js"></script>
+
+  <!-- Utils (validação do telefone) -->
+  <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@19.5.7/build/js/utils.js"></script>
+
+  <script src="./app.js"></script>
+</body>
+</html>

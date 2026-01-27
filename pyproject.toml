@@ -1,0 +1,21 @@
+[project]
+name = "pdf-backend"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10.13"
+dependencies = [
+    "fastapi[standard]>=0.128.0",
+    "openai>=2.15.0",
+    "requests>=2.32.5",
+    "weasyprint>=67.0",
+    "python-dotenv>=1.0.1",
+    "dramatiq[redis]>=1.17.0",
+    "sqlalchemy>=2.0.36",
+    "psycopg2-binary>=2.9.9",
+    "alembic>=1.13.2",
+    "google-api-python-client>=2.149.0",
+    "google-auth>=2.36.0",
+    "google-auth-httplib2>=0.2.0",
+    "google-auth-oauthlib>=1.2.1",
+]

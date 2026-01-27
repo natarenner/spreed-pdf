@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Pagamento PIX • Auditoria Estratégica</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <main class="page">
+        <section class="shell">
+            <header class="top">
+                <div class="brand">
+                    <div class="logo">S</div>
+                    <div class="brand-text">
+                        <div class="brand-name">Spreed</div>
+                        <div class="brand-sub">Pagamento seguro</div>
+                    </div>
+                </div>
+
+                <div class="trust">
+                    <span class="pill"><span class="dot"></span> PIX</span>
+                </div>
+            </header>
+
+            <section class="card">
+                <div class="summary">
+                    <div class="product">
+                        <h1>Auditoria Estratégica</h1>
+                        <p id="customerName">Carregando dados do cliente...</p>
+                    </div>
+
+                    <div class="pricebox">
+                        <div class="price" id="displayPrice">R$ 100,00</div>
+                        <div class="hint">Pagamento instantâneo via PIX</div>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <section class="qr" id="qrArea" style="display: block;">
+                    <div class="qr-head">
+                        <div>
+                            <h2>Finalize seu pagamento</h2>
+                            <p>Escaneie o código com o app do seu banco.</p>
+                        </div>
+                        <span class="pill" id="paymentStatus"><span class="dot"></span> Processando...</span>
+                    </div>
+
+                    <div class="qr-loading" id="qrLoading" style="padding: 40px 0; text-align: center;">
+                        <div class="status" id="statusText">Gerando seu QR Code exclusivo...</div>
+                    </div>
+
+                    <div class="qr-body" id="qrContent" style="display: none;">
+                        <div class="qr-code">
+                            <div id="qrcode"></div>
+                        </div>
+
+                        <div class="qr-copy">
+                            <label for="pixText">Copia e Cola</label>
+                            <div class="pix-copy-box">
+                                <input id="pixText" readonly value="" />
+                            </div>
+
+                            <button id="copyBtn" type="button" class="btn-secondary" style="width: 100%;">Copiar Código
+                                PIX</button>
+
+                            <div class="expires" id="expires">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                                O código expira em instantes.
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </section>
+
+            <footer class="footer">
+                SPREED SOFTWARE E PRODUCOES LTDA • CNPJ: 52.783.893/0001-92
+            </footer>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="./payment.js"></script>
+</body>
+
+</html>

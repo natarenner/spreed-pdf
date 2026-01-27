@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Auditoria Estratégica — Spreed</title>
+</head>
+
+<body>
+    <main class="wrap" role="main">
+        <div class="logo">
+            <img id="spreed-logo" src="{{logo_url}}" alt="Spreed — logo" />
+        </div>
+
+        <header>
+            <h1>Auditoria Estratégica de Autoridade Digital — Spreed</h1>
+            <p class="meta">Perfil auditado: <strong>{{nome_completo}}</strong> — Instagram:
+                <strong>{{instagram}}</strong>. Nicho declarado: <strong>{{nicho_principal}}</strong>.
+            </p>
+        </header>
+
+        <!-- 1) Raio-X do Perfil -->
+        <section class="section" id="raio-x">
+            <h2>1) Raio-X do Perfil</h2>
+            <p><strong>Nome:</strong> {{nome_completo}} · <strong>Conta:</strong> {{instagram}} ·
+                <strong>Nicho:</strong> {{nicho_principal}}.
+            </p>
+            <p class="mini">{{resumo_executivo}}</p>
+        </section>
+
+        <!-- 2) Valor de Mercado do Perfil -->
+        <section class="section" id="valor-mercado">
+            <h2>2) Valor de Mercado do Perfil</h2>
+            <p>Capacidade de transformar visibilidade em leads/negócios, considerando ticket médio e maturidade atual.
+            </p>
+            <div class="kpis">
+                <div class="kpi"><strong>Ticket médio</strong><br><span class="emph">{{ticket_medio}}</span></div>
+                <div class="kpi"><strong>Leads qualificados / mês (estim.)</strong><br><span
+                        class="emph">{{leads_estimados}}</span></div>
+                <div class="kpi"><strong>Faturamento digital potencial / mês</strong><br><span
+                        class="emph">{{faturamento_potencial}}</span></div>
+            </div>
+        </section>
+
+        <!-- 3) Tamanho do Mercado -->
+        <section class="section" id="tamanho-mercado">
+            <h2>3) Tamanho do Mercado</h2>
+            {{tamanho_mercado_html}}
+        </section>
+
+        <!-- 4) Audiência Visível vs Oculta -->
+        <section class="section" id="audiencia">
+            <h2>4) Audiência Visível vs Oculta</h2>
+            {{audiencia_html}}
+        </section>
+
+        <!-- 5) Diagnóstico de Crescimento -->
+        <section class="section" id="diagnostico">
+            <h2>5) Diagnóstico de Crescimento</h2>
+            {{diagnostico_html}}
+        </section>
+
+        <!-- 6) Três principais erros personalizados -->
+        <section class="section" id="erros">
+            <h2>6) Três principais erros personalizados</h2>
+            {{erros_html}}
+        </section>
+
+        <!-- 7) Projeção de Crescimento -->
+        <section class="section" id="projecao">
+            <h2>7) Projeção de Crescimento</h2>
+            <p class="mini">Projeção com execução do plano 60–120 dias:</p>
+            <div class="kpis">
+                <div class="kpi"><strong>Seguidores (6 meses)</strong><br>Meta:<span
+                        class="emph">{{meta_seguidores}}</span></div>
+                <div class="kpi"><strong>Leads qualificados / mês</strong><br>de {{leads_atuais}} → <span
+                        class="emph">{{meta_leads}}</span></div>
+                <div class="kpi"><strong>Faturamento mensal estimado</strong><br><span
+                        class="emph">{{meta_faturamento}}</span></div>
+            </div>
+        </section>
+
+        <!-- 8) Oportunidade Principal -->
+        <section class="section" id="oportunidade">
+            <h2>8) Oportunidade Principal</h2>
+            {{oportunidade_html}}
+        </section>
+
+        <!-- 9) Plano de Autoridade (60–120 dias) -->
+        <section class="section" id="plano">
+            <h2>9) Plano de Autoridade (60–120 dias)</h2>
+            {{plano_detalhado_html}}
+        </section>
+
+        <!-- 10) Conclusão Estratégica -->
+        <section class="section" id="conclusao">
+            <h2>10) Conclusão Estratégica</h2>
+            {{conclusao_html}}
+            <p style="margin-top:12px;"><a class="cta" href="#">Quero o checklist e cronograma</a></p>
+        </section>
+
+        <footer>
+            Relatório gerado por <strong>Auditoria Estratégica — Spreed</strong>.
+        </footer>
+    </main>
+    <!-- <div class="force-second-page"></div> -->
+</body>
+
+</html>
