@@ -53,3 +53,26 @@ class Charge(Base):
     # Ploomes Info
     ploomes_contact_id: Mapped[int | None] = mapped_column(Integer)
     ploomes_deal_id: Mapped[int | None] = mapped_column(Integer)
+
+
+class Lead(Base):
+    """
+    Leads captured from BotConversa automation.
+    Used to track users who started the funnel but haven't converted yet.
+    """
+    __tablename__ = "leads"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    phone: Mapped[str] = mapped_column(String(20), nullable=False, unique=True)
+    
+    # Conversion tracking
+    has_purchased: Mapped[bool] = mapped_column(default=False, nullable=False)
+    has_booked: Mapped[bool] = mapped_column(default=False, nullable=False)
+    
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow
+    )

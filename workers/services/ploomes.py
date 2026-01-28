@@ -130,10 +130,12 @@ def create_deal(
 def update_deal(
     deal_id: int, 
     stage_id: Optional[int] = None, 
-    next_owner_id: Optional[int] = None
+    next_owner_id: Optional[int] = None,
+    revenue_range: Optional[str] = None
 ) -> None:
     """
     Updates an existing deal in Ploomes.
+    Can update stage, next owner, and revenue range.
     """
     payload = {
         "OriginId": 110170856 # Garante que a origem seja mantida/setada no update
@@ -141,17 +143,105 @@ def update_deal(
     if stage_id:
         payload["StageId"] = int(stage_id)
     
+    other_properties = []
+    
     if next_owner_id:
-        payload["OtherProperties"] = [
-            {
-                "FieldKey": "deal_ECD431A9-E30F-4014-A6FF-56A953F1F984",
-                "IntegerValue": int(next_owner_id)
-            }
-        ]
+        other_properties.append({
+            "FieldKey": "deal_ECD431A9-E30F-4014-A6FF-56A953F1F984",
+            "IntegerValue": int(next_owner_id)
+        })
+    
+    if revenue_range:
+        revenue_id = map_revenue_to_ploomes_id(revenue_range)
+        if revenue_id:
+            other_properties.append({
+                "FieldKey": "deal_11082450",  # Table ID for revenue field
+                "IntegerValue": revenue_id
+            })
+    
+    if other_properties:
+        payload["OtherProperties"] = other_properties
         
     url = f"{PLOOMES_BASE_URL}/Deals({deal_id})"
     response = requests.patch(url, json=payload, headers=get_headers(), timeout=10)
     
     if not response.ok:
         print(f"PLOOMES UPDATE ERROR: {response.status_code} - {response.text}")
+        response.raise_for_status()
+
+
+def map_revenue_to_ploomes_id(revenue_text: str) -> Optional[int]:
+    """
+    Maps revenue range text to Ploomes table option ID.
+    
+    Revenue field: contact_F713F5E5-D54A-4CD1-A358-B266BE0719FA
+    Options:
+    - Até 10 mil -> 1138221110
+    - R$ 10-25 mil -> 1138221111
+    - R$ 25-50 mil -> 1138221112
+    - R$ 50-200 mil -> 1138221113
+    - R$ 200 mil+ -> 1138221114
+    """
+    revenue_lower = revenue_text.lower().strip()
+    
+    # Mapping based on common patterns
+    if "até 10" in revenue_lower or "10 mil" in revenue_lower and "25" not in revenue_lower:
+        return 1138221110
+    elif "10" in revenue_lower and "25" in revenue_lower:
+        return 1138221111
+    elif "25" in revenue_lower and "50" in revenue_lower:
+        return 1138221112
+    elif "50" in revenue_lower and "200" in revenue_lower:
+        return 1138221113
+    elif "200" in revenue_lower and ("mil+" in revenue_lower or "acima" in revenue_lower):
+        return 1138221114
+    
+    # Fallback: try to extract numbers and determine range
+    import re
+    numbers = re.findall(r'\d+', revenue_text)
+    if numbers:
+        first_num = int(numbers[0])
+        if first_num < 10:
+            return 1138221110
+        elif 10 <= first_num < 25:
+            return 1138221111
+        elif 25 <= first_num < 50:
+            return 1138221112
+        elif 50 <= first_num < 200:
+            return 1138221113
+        elif first_num >= 200:
+            return 1138221114
+    
+    print(f"⚠️  Não foi possível mapear faturamento: '{revenue_text}'")
+    return None
+
+
+def update_contact(contact_id: int, revenue_range: Optional[str] = None) -> None:
+    """
+    Updates a contact in Ploomes with revenue range.
+    Revenue field is stored in the Contact, not the Deal.
+    """
+    if not revenue_range:
+        return
+    
+    revenue_id = map_revenue_to_ploomes_id(revenue_range)
+    if not revenue_id:
+        print(f"⚠️  Não foi possível atualizar faturamento: mapeamento falhou para '{revenue_range}'")
+        return
+    
+    # Try array format (like Deal updates)
+    payload = {
+        "OtherProperties": [
+            {
+                "FieldKey": "contact_F713F5E5-D54A-4CD1-A358-B266BE0719FA",
+                "IntegerValue": revenue_id
+            }
+        ]
+    }
+    
+    url = f"{PLOOMES_BASE_URL}/Contacts({contact_id})"
+    response = requests.patch(url, json=payload, headers=get_headers(), timeout=10)
+    
+    if not response.ok:
+        print(f"PLOOMES CONTACT UPDATE ERROR: {response.status_code} - {response.text}")
         response.raise_for_status()

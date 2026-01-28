@@ -34,6 +34,16 @@ def create_app() -> FastAPI:
     )
 
     # Mount templates (at the end so it doesn't intercept API calls)
+    from fastapi.responses import FileResponse
+    
+    @app.get("/checkout", include_in_schema=False)
+    async def serve_checkout():
+        return FileResponse(str(BASE_DIR / "templates" / "checkout.html"))
+
+    @app.get("/payment", include_in_schema=False)
+    async def serve_payment():
+        return FileResponse(str(BASE_DIR / "templates" / "payment.html"))
+
     app.mount("/", StaticFiles(directory=str(BASE_DIR / "templates"), html=True), name="static")
     
     return app

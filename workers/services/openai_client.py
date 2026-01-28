@@ -22,25 +22,25 @@ def _load_assets() -> Dict[str, str]:
 
 
 QUESTION_MAP = {
-    "os30zscm7hd00tp6qkabp90q": "Qual o seu nome completo?",
-    "kp5n1z4vi4b63q56xh29qucc": "Seu melhor E-mail",
-    "qxuxu27rubvcq0ntvodpjm0d": "Seu @ do Instagram",
-    "vx6qkcwblt53wv8dnaqchih4": "1) Qual é o seu nicho principal?",
-    "yfr6nkshb10u5ti1cxjswuqp": "2) Qual é o objetivo principal do seu perfil?",
-    "i5d6nazh8tcbrr2myi2e947y": "3) Quem é o seu público ideal?",
-    "souo56m9fmv8sqb0sbk8gjli": "4) O que você vende hoje?",
-    "fu5kn4hvizxp9rr2bk94oeos": "5) Qual é o ticket médio do seu produto/serviço principal?",
-    "glvh90gl5tkzeg1wng36ktqe": "6) Quantos clientes você consegue atender por mês?",
-    "uookpj515mmrd9kmp5nm6x0r": "7) Quantos seguidores você tem hoje?",
-    "let97ou6szewi8t6jy10jao2": "8) Quantas postagens você faz por semana?",
-    "ppmyppicazkuu3kz3990dz17": "9) Qual é o seu formato principal de conteúdo?",
-    "ks56y6w0jvbgbq5edrd3yc33": "10) Qual é sua média de visualizações nos Reels?",
-    "jhbs540l5uxdg790u1a5tszr": "11) Sua taxa aproximada de conversão (seguidores → clientes) é:",
-    "pwq7k6pu5d6dar9033u78f31": "12) Como você descreve seu crescimento atual nas redes sociais?",
-    "s354uknjwoj9xfubtute3kyt": "13) Quanto tempo você dedica ao Instagram por dia?",
-    "iivcze2c1om40x9w3pa6fc8m": "14) Qual é sua meta de seguidores para os próximos 6 meses?",
-    "v9osxzrbno0un8z2cwhxfzcm": "15) Qual é sua meta mensal de faturamento?",
-    "lth71by3o7on8ubznk66ip33": "16) Qual é o faturamento médio mensal atual?",
+    "name": "Qual o seu nome completo?",
+    "email": "Seu melhor E-mail",
+    "instagram": "Seu @ do Instagram",
+    "nicho": "1) Qual é o seu nicho principal?",
+    "objetivo": "2) Qual é o objetivo principal do seu perfil?",
+    "publico": "3) Quem é o seu público ideal?",
+    "oque_vende": "4) O que você vende hoje?",
+    "ticket_medio": "5) Qual é o ticket médio do seu produto/serviço principal?",
+    "clientes_mes": "6) Quantos clientes você consegue atender por mês?",
+    "total_seguidores": "7) Quantos seguidores você tem hoje?",
+    "postagens_semana": "8) Quantas postagens você faz por semana?",
+    "formato_conteudo": "9) Qual é o seu formato principal de conteúdo?",
+    "media_reels": "10) Qual é sua média de visualizações nos Reels?",
+    "taxa_conversao": "11) Sua taxa aproximada de conversão (seguidores → clientes) é:",
+    "crescimento_redes": "12) Como você descreve seu crescimento atual nas redes sociais?",
+    "tempo_insta": "13) Quanto tempo você dedica ao Instagram por dia?",
+    "meta_seguidores": "14) Qual é sua meta de seguidores para os próximos 6 meses?",
+    "meta_faturamento_mensal": "15) Qual é sua meta mensal de faturamento?",
+    "faturamento_medio_atual": "16) Qual é o faturamento médio mensal atual?",
 }
 
 
@@ -54,16 +54,21 @@ def generate_html(payload: Dict[str, Any]) -> str:
         "O texto deve ser persuasivo, autoritário, mas ao mesmo tempo acolhedor e altamente estratégico. "
         "Inspire-se em auditorias de alto nível: use termos como 'Alavancagem de Autoridade', 'Escalabilidade Digital', 'Público Qualificado' e 'Lacunas de Conversão'. "
         "IMPORTANTE: Você deve retornar APENAS o código HTML preenchido. "
-        "Adicione ao texto final quantos % (de 0 a 60%) a pessoa tem de viralizar para atingir os resultados desejados.E o que ela precisa fazer para começar a viralizar de uma forma estruturada e escalável."
-        "Enriqueça o texto com insights estratégicos baseados nos dados fornecidos."
+        "Adicione ao texto final quantos % (de 0 a 60%) qual é chance que pessoa tem de viralizar para atingir os resultados desejados baseado APENAS nas respostas do formulário. E o que ela precisa fazer para começar a viralizar de uma forma estruturada e escalável."
+        "Importante: queremos uma margem de melhora, ou seja, apenas de 0 à 60% apenas, exemplo: Sua taxa de viralização é entre 30% a 60% por causa de..."
+        "Enriqueça o texto com insights estratégicos baseados nos dados fornecidos. E uma conclusão elaborada e técnica com pelo menos 10 linhas."
         "MANTENHA EXATAMENTE as classes CSS e a estrutura do template fornecido. "
         "Não use blocos de Markdown como ```html ... ```. Retorne o texto puro do HTML.."
     )
 
     # Map IDs to questions
     raw_data = payload.get("data", {}).get("data", {})
-    mapped_data = {QUESTION_MAP.get(k, k): v for k, v in raw_data.items()}
+    
+    # Sanitize Instagram handle (remove @ and whitespace)
+    if "instagram" in raw_data and isinstance(raw_data["instagram"], str):
+        raw_data["instagram"] = raw_data["instagram"].strip().lstrip("@").strip()
 
+    mapped_data = {QUESTION_MAP.get(k, k): v for k, v in raw_data.items()}
     user_prompt = (
         f"Dados do cliente capturados no formulário:\n{mapped_data}\n\n"
         f"Use este Template HTML para preencher as informações:\n{assets['template']}\n\n"
@@ -130,25 +135,25 @@ if __name__ == "__main__":
     test_payload = {
         "data": {
             "data": {
-                "os30zscm7hd00tp6qkabp90q": "Natan Spreed",
-                "kp5n1z4vi4b63q56xh29qucc": "natan@spreed.ai",
-                "qxuxu27rubvcq0ntvodpjm0d": "natanspreed",
-                "vx6qkcwblt53wv8dnaqchih4": "Infoprodutor / Educação Online",
-                "yfr6nkshb10u5ti1cxjswuqp": "Vender mentorias de automação e escala",
-                "i5d6nazh8tcbrr2myi2e947y": "Empreendedores digitais faturando acima de 10k/mês",
-                "souo56m9fmv8sqb0sbk8gjli": "Mentoria de Escala com IA",
-                "fu5kn4hvizxp9rr2bk94oeos": "R$ 5.000,00",
-                "glvh90gl5tkzeg1wng36ktqe": "10",
-                "uookpj515mmrd9kmp5nm6x0r": "15.400",
-                "let97ou6szewi8t6jy10jao2": "7 posts e infinitos stories",
-                "ppmyppicazkuu3kz3990dz17": "Reels e Carrosséis Técnicos",
-                "ks56y6w0jvbgbq5edrd3yc33": "5k a 10k",
-                "jhbs540l5uxdg790u1a5tszr": "2% a 5%",
-                "pwq7k6pu5d6dar9033u78f31": "Crescimento constante mas estagnado no faturamento",
-                "s354uknjwoj9xfubtute3kyt": "4 horas",
-                "iivcze2c1om40x9w3pa6fc8m": "50.000",
-                "v9osxzrbno0un8z2cwhxfzcm": "R$ 100.000,00",
-                "lth71by3o7on8ubznk66ip33": "R$ 25.000,00",
+                "name": "Natan Spreed",
+                "email": "natan@spreed.ai",
+                "instagram": "natanspreed",
+                "nicho": "Infoprodutor / Educação Online",
+                "objetivo": "Vender mentorias de automação e escala",
+                "publico": "Empreendedores digitais faturando acima de 10k/mês",
+                "oque_vende": "Mentoria de Escala com IA",
+                "ticket_medio": "R$ 5.000,00",
+                "clientes_mes": "10",
+                "total_seguidores": "15.400",
+                "postagens_semana": "7 posts e infinitos stories",
+                "formato_conteudo": "Reels e Carrosséis Técnicos",
+                "media_reels": "5k a 10k",
+                "taxa_conversao": "2% a 5%",
+                "crescimento_redes": "Crescimento constante mas estagnado no faturamento",
+                "tempo_insta": "4 horas",
+                "meta_seguidores": "50.000",
+                "meta_faturamento_mensal": "R$ 100.000,00",
+                "faturamento_medio_atual": "R$ 25.000,00",
             }
         }
     }

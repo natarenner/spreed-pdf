@@ -100,7 +100,107 @@ sudo certbot --nginx -d api.spreed-automacao.com.br -d seguro.spreed-automacao.c
 - `seguro.spreed-automacao.com.br`: Landing pages for checkout and payment confirmation.
 - `forms.spreed-automacao.com.br`: Formbricks dashboard and integrations.
 
+
+## 📊 Lead Tracking & CSV Export
+
+### Overview
+The system captures leads from BotConversa automation and tracks their conversion status (purchase or booking). Non-converted leads are exported to CSV daily and removed from the database.
+
+### Webhook Endpoint
+**POST** `/api/webhooks/bot-lead`
+
+Payload:
+```json
+{
+  "name": "João Silva",
+  "phone": "+5511999999999"
+}
+```
+
+### Conversion Tracking
+Leads are automatically marked as converted when they:
+- **Purchase**: Complete a payment (triggers `has_purchased = True`)
+- **Book**: Schedule an audit via Cal.com (triggers `has_booked = True`)
+
+### Daily CSV Export
+
+A cronjob runs daily at midnight to:
+1. Export all non-converted leads to CSV (`exports/leads_nao_convertidos_YYYYMMDD_HHMMSS.csv`)
+2. Delete these leads from the database
+
+#### 🚀 Automated Setup (Recommended)
+
+Run the setup script **once** on your server:
+
+```bash
+cd /home/yato/code/work/spreed/pdf/backend
+sudo bash scripts/setup_cronjob.sh
+```
+
+This script will:
+- ✅ Create log directory (`/var/log/spreed/`)
+- ✅ Verify exports directory
+- ✅ Test the export script
+- ✅ Install the cronjob automatically
+- ✅ Show a summary with useful commands
+
+**The cronjob will run automatically every day at 00:00 (midnight) from now on.**
+
+#### 📊 Monitoring & Management
+
+```bash
+# Check if cronjob is installed
+crontab -l
+
+# View logs in real-time
+tail -f /var/log/spreed/lead_export.log
+
+# Test manually (without waiting for midnight)
+docker-compose exec api uv run python workers/export_leads.py
+
+# View generated CSVs
+ls -lh exports/
+
+# Remove cronjob (if needed)
+crontab -e  # Delete the line containing "export_leads"
+```
+
+#### 🔧 Manual Setup (Alternative)
+
+If you prefer to configure manually:
+
+```bash
+# 1. Create log directory
+sudo mkdir -p /var/log/spreed
+sudo chown $USER:$USER /var/log/spreed
+
+# 2. Edit crontab
+crontab -e
+
+# 3. Add this line:
+0 0 * * * cd /home/yato/code/work/spreed/pdf/backend && docker-compose exec -T api uv run python workers/export_leads.py >> /var/log/spreed/lead_export.log 2>&1
+```
+
+#### ⏰ Cron Schedule Explained
+
+```
+0 0 * * *
+│ │ │ │ │
+│ │ │ │ └─ Day of week (0-7, 0 and 7 = Sunday)
+│ │ │ └─── Month (1-12)
+│ │ └───── Day of month (1-31)
+│ └─────── Hour (0-23)
+└───────── Minute (0-59)
+```
+
+`0 0 * * *` = Every day at 00:00 (midnight)
+
+**Note:** You only need to run the setup script **once**. The cronjob will continue running automatically every day until you remove it.
+
+---
+
 ## 📁 Project Structure
+
 
 - `/api`: FastAPI application source code.
 - `/workers`: Asynchronous tasks and integration services (Ploomes, BotConversa, GDrive).

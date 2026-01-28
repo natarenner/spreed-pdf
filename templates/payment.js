@@ -9,8 +9,8 @@ let isPixRendered = false;
 
 // Strict validation on load: only allows pure digits (0-9)
 if (!chargeId || !/^\d+$/.test(chargeId)) {
-    window.location.href = "checkout.html";
-    throw new Error("ID inválido. Redirecionando..."); // Força a parada da execução do script
+    window.location.href = "checkout";
+    throw new Error("ID inválido. Redirecionando...");
 }
 
 async function fetchStatus() {
@@ -19,7 +19,7 @@ async function fetchStatus() {
 
         // Handle invalid ID or charge not found
         if (res.status === 404 || res.status === 422) {
-            window.location.href = "checkout.html";
+            window.location.href = "checkout";
             return null;
         }
 

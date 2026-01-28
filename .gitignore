@@ -10,5 +10,9 @@ wheels/
 .venv
 .env
 
+# Generated files
 examples/
 nginx/
+exports/*.csv
+!exports/.gitkeep
+

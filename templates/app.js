@@ -211,7 +211,7 @@ async function onSubmit(e) {
     setStatus("Redirecionando para o pagamento...");
 
     // Redirect to the dedicated payment page
-    window.location.href = `payment.html?id=${chargeId}`;
+    window.location.href = `payment?id=${chargeId}`;
 
   } catch (err) {
     setStatus(err?.message || "Erro ao iniciar checkout.");

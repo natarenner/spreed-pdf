@@ -48,8 +48,8 @@ def process_webhook(webhook_id: int) -> None:
         db.commit()
 
         raw_data = record.payload.get("data", {}).get("data", {})
-        name = raw_data.get("os30zscm7hd00tp6qkabp90q", "Cliente").split()[0]
-        email = raw_data.get("kp5n1z4vi4b63q56xh29qucc", "")
+        name = raw_data.get("name", "Cliente")
+        email = raw_data.get("email", "")
         
         # Tenta pegar o telefone para as notificações
         phone = None
@@ -88,8 +88,8 @@ def process_webhook(webhook_id: int) -> None:
             else:
                 low = mid + 1
 
-        insta = raw_data.get("qxuxu27rubvcq0ntvodpjm0d", "").strip().lstrip("@").strip().replace(" ", "_")
-        filename = f"auditoria-{insta if insta else webhook_id}-{webhook_id}.pdf"
+        insta = raw_data.get("instagram", "").strip().lstrip("@").strip().replace(" ", "_")
+        filename = f"auditoria-{name}-@{insta if insta else webhook_id}-{webhook_id}.pdf"
         pdf_path = OUTPUT_DIR / filename
         
         final_doc = render_with_height(best_height)
@@ -103,18 +103,18 @@ def process_webhook(webhook_id: int) -> None:
         db.commit()
 
         # --- MENSAGEM FINAL (CONCLUSÃO) ---
-        if phone:
-            try:
-                finish_msg = (
-                    f"Recebemos suas respostas da auditoria, {name}! 🙌\n\n"
-                    "Muito obrigado por preencher. Nossos especialistas já estão com seus dados em mãos e te aguardam "
-                    "no horário agendado para fazermos sua Auditoria Estratégica.\n\n"
-                    "Até breve! 🚀"
-                )
-                ensure_subscriber_and_send_message(phone=phone, first_name=name, message=finish_msg)
-                print(f"WHATSAPP: Mensagem de conclusão enviada para {name}")
-            except Exception as e:
-                print(f"WHATSAPP FINISH MSG ERROR: {e}")
+        # if phone:
+        #     try:
+        #         finish_msg = (
+        #             f"Recebemos suas respostas da auditoria, {name}! 🙌\n\n"
+        #             "Muito obrigado por preencher. Nossos especialistas já estão com seus dados em mãos e te aguardam "
+        #             "no horário agendado para fazermos sua Auditoria Estratégica.\n\n"
+        #             "Até breve! 🚀"
+        #         )
+        #         ensure_subscriber_and_send_message(phone=phone, first_name=name, message=finish_msg)
+        #         print(f"WHATSAPP: Mensagem de conclusão enviada para {name}")
+        #     except Exception as e:
+        #         print(f"WHATSAPP FINISH MSG ERROR: {e}")
 
     except Exception as exc:  # noqa: BLE001
         db.rollback()
@@ -200,7 +200,14 @@ def send_purchase_confirmation_whatsapp(charge_id: int) -> None:
             first_name=charge.customer_name.split()[0],  # Use first name
             message=message
         )
-        print(f"WHATSAPP: Mensagem enviada para {charge.customer_name} ({charge.customer_phone})")
+        
+        # Mark lead as converted (purchased) if exists
+        from db.models import Lead
+        lead = db.query(Lead).filter(Lead.phone == charge.customer_phone).first()
+        if lead:
+            lead.has_purchased = True
+            db.commit()
+
     except Exception as exc:
         print(f"WHATSAPP ERROR: {exc}")
         raise exc
@@ -214,7 +221,7 @@ def send_cal_booking_confirmation_whatsapp(phone: str, name: str) -> None:
         message = (
             f"Olá {name}! Sua reserva foi confirmada com sucesso. 📅\n\n"
             "Agora, o próximo passo é preencher o *formulário de auditoria* para que possamos analisar seu caso:\n"
-            "👉 https://forms.meudominio.com/s/cmkr7p7a3000imi01peleo60g\n\n"
+            "👉 https://forms.spreed-automacao.com.br/s/cmkxbo99w000equ0115sikapk\n\n"
             "_Pode desconsiderar esta mensagem se você já preencheu o formulário anteriormente._"
         )
 
@@ -223,6 +230,19 @@ def send_cal_booking_confirmation_whatsapp(phone: str, name: str) -> None:
             first_name=name.split()[0],
             message=message
         )
+        
+        # Mark lead as converted (booked) if exists
+        from db.session import SessionLocal
+        from db.models import Lead
+        db = SessionLocal()
+        try:
+            lead = db.query(Lead).filter(Lead.phone == phone).first()
+            if lead:
+                lead.has_booked = True
+                db.commit()
+        finally:
+            db.close()
+            
         print(f"WHATSAPP: Mensagem de agendamento enviada para {name} ({phone})")
     except Exception as exc:
         print(f"WHATSAPP CAL ERROR: {exc}")
@@ -304,14 +324,33 @@ def track_booking_ploomes_task(name: str, email: str, phone: str, organizer_emai
         # 1) Get organizer/owner ID
         next_owner_id = get_user_id_by_email(organizer_email)
         
-        # 2) Update existing Deal
-        try:
-            update_deal(
+        # 2) Try to get revenue data from webhook form submission
+        revenue_range = None
+        webhook = db.query(WebhookRequest).filter(
+            WebhookRequest.payload['data']['data']['email'].astext == email
+        ).order_by(WebhookRequest.created_at.desc()).first()
+        
+        if webhook:
+            form_data = webhook.payload.get('data', {}).get('data', {})
+            revenue_range = form_data.get('faturamento_medio_atual')
+            if revenue_range:
+                print(f"PLOOMES: Faturamento encontrado no formulário: {revenue_range}")
+        
+        # 3) Update existing Deal (stage and next owner)
                 deal_id=charge.ploomes_deal_id,
                 stage_id=110128042,
                 next_owner_id=next_owner_id
             )
             print(f"PLOOMES: Negócio {charge.ploomes_deal_id} atualizado para 'Agendado' ({name})")
+            
+            # 4) Update Contact with revenue range (if available)
+            if revenue_range and charge.ploomes_contact_id:
+                from workers.services.ploomes import update_contact
+                update_contact(
+                    contact_id=charge.ploomes_contact_id,
+                    revenue_range=revenue_range
+                )
+            
         except Exception as api_exc:
             # Se der 404 (Negócio excluído no Ploomes), não queremos que a fila trave
             if "404" in str(api_exc):

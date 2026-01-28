@@ -47,6 +47,13 @@ strong {
   box-shadow: none;
 }
 
+a,
+a:visited,
+a:hover,
+a:active {
+  text-decoration: none;
+  color: inherit;
+}
 
 /* =========================================================
  LOGO / HEADER

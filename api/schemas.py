@@ -107,3 +107,9 @@ class CalPayload(BaseModel):
 class CalWebhookPayload(BaseModel):
     triggerEvent: str
     payload: Optional[CalPayload] = None
+
+
+class BotLeadWebhookPayload(BaseModel):
+    """Payload from BotConversa automation for lead capture"""
+    name: str
+    phone: str

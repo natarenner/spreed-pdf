@@ -6,8 +6,15 @@ from sqlalchemy.orm import Session
 from api.settings import api_settings
 
 from db.session import get_db
-from db.models import WebhookRequest, Charge
-from api.schemas import WebhookPayload, WebhookResponse, WooviWebhookPayload, CalWebhookPayload
+from db.models import WebhookRequest, Charge, Lead
+from api.schemas import (
+    WebhookPayload, 
+    WebhookResponse, 
+    WooviWebhookPayload, 
+    CalWebhookPayload,
+    BotLeadWebhookPayload
+)
+from sqlalchemy.exc import IntegrityError
 from workers.tasks import (
     process_webhook, 
     send_purchase_confirmation_whatsapp, 
@@ -116,6 +123,36 @@ async def cal_webhook(payload: CalWebhookPayload):
                     organizer_email=organizer_email
                 )
             else:
-                print(f"Cal.com: Cliente {customer.name} sem número de telefone no agendamento.")
+                pass
                 
     return {"status": "ok"}
+
+
+@router.post("/webhooks/bot-lead")
+def bot_lead_webhook(payload: BotLeadWebhookPayload, db: Session = Depends(get_db)):
+    """
+    Webhook triggered by BotConversa automation to capture initial leads.
+    Stores lead data for tracking and later CSV export of non-converted leads.
+    """
+    
+    try:
+        # Try to create new lead (phone is unique)
+        lead = Lead(
+            name=payload.name,
+            phone=payload.phone,
+            has_purchased=False,
+            has_booked=False
+        )
+        db.add(lead)
+        db.commit()
+        db.refresh(lead)
+        
+        return {"status": "ok", "lead_id": lead.id, "message": "Lead created"}
+        
+    except IntegrityError:
+        # Lead already exists (duplicate phone)
+        db.rollback()
+        return {"status": "ok", "message": "Lead already exists"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
