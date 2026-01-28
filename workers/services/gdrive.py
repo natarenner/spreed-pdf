@@ -14,7 +14,19 @@ from api.settings import api_settings
 SCOPES = ["https://www.googleapis.com/auth/drive.file"]
 
 
-def upload_pdf(file_path: Path, filename: str) -> dict:
+def upload_file(file_path: Path, filename: str, folder_id: str, mimetype: str = "text/csv") -> dict:
+    """
+    Generic file upload to Google Drive.
+    
+    Args:
+        file_path: Path to the file to upload
+        filename: Name for the file in Drive
+        folder_id: Google Drive folder ID
+        mimetype: MIME type of the file
+    
+    Returns:
+        Dict with file id and webViewLink
+    """
     credentials = None
     if api_settings.google_service_account_json_base64:
         try:
@@ -43,9 +55,9 @@ def upload_pdf(file_path: Path, filename: str) -> dict:
 
     file_metadata = {
         "name": filename,
-        "parents": [api_settings.google_drive_folder_id],
+        "parents": [folder_id],
     }
-    media = MediaFileUpload(str(file_path), mimetype="application/pdf")
+    media = MediaFileUpload(str(file_path), mimetype=mimetype)
 
     return (
         service.files()
@@ -56,4 +68,14 @@ def upload_pdf(file_path: Path, filename: str) -> dict:
             supportsAllDrives=True,
         )
         .execute()
+    )
+
+
+def upload_pdf(file_path: Path, filename: str) -> dict:
+    """Upload PDF to default Google Drive folder"""
+    return upload_file(
+        file_path=file_path,
+        filename=filename,
+        folder_id=api_settings.google_drive_folder_id,
+        mimetype="application/pdf"
     )

@@ -16,7 +16,7 @@ from db.models import Lead
 def export_and_cleanup_leads():
     """
     Export leads that haven't purchased or booked to CSV,
-    then delete them from the database.
+    upload to Google Drive, then delete them from the database.
     """
     db = SessionLocal()
     
@@ -56,6 +56,30 @@ def export_and_cleanup_leads():
         
         print(f"✅ CSV gerado: {csv_filename}")
         print(f"📊 Total de leads não convertidos: {len(non_converted_leads)}")
+        
+        # Upload to Google Drive
+        try:
+            from workers.services.gdrive import upload_file
+            from api.settings import api_settings
+            
+            drive_info = upload_file(
+                file_path=csv_filename,
+                filename=csv_filename.name,
+                folder_id=api_settings.google_drive_csv_folder_id,
+                mimetype="text/csv"
+            )
+            
+            print(f"☁️  CSV enviado para Google Drive")
+            print(f"🔗 Link: {drive_info.get('webViewLink')}")
+            print(f"📁 File ID: {drive_info.get('id')}")
+            
+            # Delete local file after successful upload
+            csv_filename.unlink()
+            print(f"🗑️  Arquivo local removido: {csv_filename}")
+            
+        except Exception as upload_error:
+            print(f"⚠️  Erro ao fazer upload para o Drive: {upload_error}")
+            print(f"📁 CSV mantido localmente em: {csv_filename}")
         
         # Delete non-converted leads from database
         for lead in non_converted_leads:

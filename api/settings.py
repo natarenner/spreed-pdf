@@ -40,6 +40,7 @@ class ApiSettings(BaseSettings):
         default=None, alias="GOOGLE_SERVICE_ACCOUNT_JSON_BASE64"
     )
     google_drive_folder_id: str = Field(alias="GOOGLE_DRIVE_FOLDER_ID")
+    google_drive_csv_folder_id: str = Field(alias="GOOGLE_DRIVE_CSV_FOLDER_ID")
 
     # Woovi
     woovi_app_id: str | None = Field(default=None, alias="WOOVI_APP_ID")
