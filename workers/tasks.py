@@ -337,6 +337,8 @@ def track_booking_ploomes_task(name: str, email: str, phone: str, organizer_emai
                 print(f"PLOOMES: Faturamento encontrado no formulário: {revenue_range}")
         
         # 3) Update existing Deal (stage and next owner)
+        try:
+            update_deal(
                 deal_id=charge.ploomes_deal_id,
                 stage_id=110128042,
                 next_owner_id=next_owner_id
