@@ -24,6 +24,9 @@ from workers.tasks import (
 )
 
 
+from api.utils import verify_formbricks_webhook
+
+
 router = APIRouter()
 
 
@@ -33,7 +36,35 @@ def health_check():
 
 
 @router.post("/webhooks/form", response_model=WebhookResponse)
-def receive_webhook(payload: WebhookPayload, db: Session = Depends(get_db)):
+async def receive_webhook(request: Request, db: Session = Depends(get_db)):
+    body_bytes = await request.body()
+    body_str = body_bytes.decode("utf-8")
+
+    # Verify Formbricks Signature
+    if api_settings.formbricks_webhook_secret:
+        try:
+            verify_formbricks_webhook(
+                body_str, 
+                dict(request.headers), 
+                api_settings.formbricks_webhook_secret
+            )
+        except ValueError as e:
+            print(f"Webhook verification failed: {e}")
+            raise HTTPException(status_code=401, detail=f"Invalid signature: {e}")
+
+    try:
+        data = json.loads(body_str)
+        # Handle both single object and list (doc shows list, but current code expects single)
+        if isinstance(data, list) and len(data) > 0:
+            payload_data = data[0]
+        else:
+            payload_data = data
+            
+        payload = WebhookPayload(**payload_data)
+    except Exception as e:
+        print(f"Error parsing Formbricks webhook payload: {e}")
+        raise HTTPException(status_code=400, detail="Invalid payload")
+
     if payload.event == "testEndpoint":
         return WebhookResponse(id=0, status="ok")
 
@@ -45,6 +76,7 @@ def receive_webhook(payload: WebhookPayload, db: Session = Depends(get_db)):
     process_webhook.send(record.id)
 
     return WebhookResponse(id=record.id, status=record.status)
+
 
 
 @router.post("/webhooks/woovi")

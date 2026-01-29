@@ -221,9 +221,10 @@ def send_cal_booking_confirmation_whatsapp(phone: str, name: str) -> None:
         message = (
             f"Olá {name}! Sua reserva foi confirmada com sucesso. 📅\n\n"
             "Agora, o próximo passo é preencher o *formulário de auditoria* para que possamos analisar seu caso:\n"
-            "👉 https://forms.spreed-automacao.com.br/s/cmkxbo99w000equ0115sikapk\n\n"
+            f"👉 {api_settings.formbricks_survey_url}\n\n"
             "_Pode desconsiderar esta mensagem se você já preencheu o formulário anteriormente._"
         )
+
 
         ensure_subscriber_and_send_message(
             phone=phone,

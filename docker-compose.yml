@@ -69,7 +69,7 @@ services:
         condition: service_healthy
 
   formbricks:
-    image: formbricks/formbricks:latest
+    image: ghcr.io/formbricks/formbricks:latest
     restart: always
     ports:
       - "3000:3000"

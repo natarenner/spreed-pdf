@@ -52,7 +52,11 @@ class ApiSettings(BaseSettings):
 
     # Ploomes
     ploomes_user_key: str | None = Field(default=None, alias="PLOOMES_USER_KEY")
-
+    formbricks_webhook_secret: Optional[str] = Field(default=None, alias="FORMBRICKS_WEBHOOK_SECRET")
+    formbricks_survey_url: str = Field(
+        default="https://forms.spreed-automacao.com.br/s/cmkzs8mm80000rn014bepotpk", 
+        alias="FORMBRICKS_SURVEY_URL"
+    )
 
     @field_validator("cors_origin_list", mode="before")
     def set_cors_origin_list(cls, cors_origin_list, info: FieldValidationInfo):
